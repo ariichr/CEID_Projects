@@ -1,0 +1,205 @@
+
+DROP TRIGGER IF EXISTS insJob; 
+DELIMITER $
+CREATE TRIGGER insJob
+AFTER INSERT ON job
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (NEW.job_evaluator,current_timestamp,'insert','success','job');
+
+END $
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS updtJob; 
+DELIMITER $
+CREATE TRIGGER updtJob
+AFTER UPDATE ON job
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (NEW.job_evaluator,current_timestamp,'update','success','job');
+
+END $
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS dltJob; 
+DELIMITER $
+CREATE TRIGGER dltJob
+BEFORE DELETE ON job
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (OLD.job_evaluator,current_timestamp,'delete','success','job');
+
+END $
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS insEmployee; 
+DELIMITER $
+CREATE TRIGGER insEmployee
+AFTER INSERT ON employee
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (NEW.empl_username,current_timestamp,'insert','success','employee');
+
+END $
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS updtEmployee; 
+DELIMITER $
+CREATE TRIGGER updtEmployee
+AFTER UPDATE ON employee
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (NEW.empl_username,current_timestamp,'update','success','employee');
+
+END $
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS dltEmployee; 
+DELIMITER $
+CREATE TRIGGER dltEmployee
+BEFORE DELETE ON employee
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (OLD.empl_username,current_timestamp,'delete','success','employee');
+
+END $
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS insRequestsevaluation; 
+DELIMITER $
+CREATE TRIGGER insRequestsevaluation
+AFTER INSERT ON job
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (NEW.job_evaluator,current_timestamp,'insert','success','requestsevaluation');
+
+END $
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS updtRequestsevaluation; 
+DELIMITER $
+CREATE TRIGGER updtRequestsevaluation
+AFTER UPDATE ON job
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (NEW.job_evaluator,current_timestamp,'update','success','requestsevaluation');
+
+END $
+DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS dltRequestsevaluation; 
+DELIMITER $
+CREATE TRIGGER dltRequestsevaluation
+BEFORE DELETE ON job
+FOR EACH ROW
+BEGIN
+
+INSERT INTO log (username,log_time,res,kind,table_name) VALUES 
+    (OLD.job_evaluator,current_timestamp,'delete','success','requestsevaluation');
+
+END $
+DELIMITER ;
+
+
+
+INSERT INTO job VALUES 
+(3004,'2020-04-06',20000,'Senior Programmer','Patra','fayboo','2020-05-14 15:30:00','2020-09-18 15:30:00');
+
+
+ DELETE FROM job WHERE jobid=3004;
+
+
+
+
+
+
+DROP TRIGGER IF EXISTS updateCompany; 
+DELIMITER $
+CREATE TRIGGER updateCompany
+BEFORE UPDATE ON company
+FOR EACH ROW
+BEGIN
+
+SET NEW.name = OLD.name;
+SET NEW.AFM = OLD.AFM;
+SET NEW.DOY = OLD.DOY;
+
+END $
+DELIMITER ;
+
+UPDATE company SET AFM='1256' WHERE AFM='1257';
+
+
+
+
+DROP TRIGGER IF EXISTS updateUser; 
+DELIMITER $
+CREATE TRIGGER updateUser
+BEFORE UPDATE ON user
+FOR EACH ROW
+BEGIN
+
+DECLARE finished_flag INT(4);
+DECLARE admUsername VARCHAR(12);
+
+DECLARE admn CURSOR FOR
+ SELECT administratorUsername
+ FROM administrator;
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished_flag=1;
+
+OPEN  admn;
+SET finished_flag = 0;
+
+WHILE(finished_flag=0) DO
+
+
+FETCH admn INTO admUsername;
+     
+IF(OLD.username  LIKE admUsername ) THEN
+	SET NEW.username = OLD.username;
+	SET NEW.password = OLD.password;
+	SET NEW.name = OLD.name;
+	SET NEW.surname = OLD.surname;
+	SET NEW.reg_date = OLD.reg_date;
+	SET NEW.email = OLD.email;
+
+
+END IF;
+
+END WHILE;
+CLOSE admn;
+
+END $
+DELIMITER ;
+
+
+UPDATE user SET username='Fay' WHERE username='fayboo';
+UPDATE user SET username='Mavra' WHERE username='mavrapol';
+
+
+
+
+

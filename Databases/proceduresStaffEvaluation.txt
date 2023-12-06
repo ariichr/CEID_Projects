@@ -1,0 +1,194 @@
+mysql.exe -u root
+
+DELIMITER $
+
+DROP PROCEDURE IF EXISTS Employee$
+
+CREATE PROCEDURE Employee(IN usernameOfEmployee VARCHAR(12))
+BEGIN
+DECLARE numOfapplies INT(4); 
+DECLARE numOfevaluations INT(4); 
+DECLARE finished_flag INT(4);
+DECLARE evalusrname VARCHAR(12) ;
+DECLARE nm VARCHAR(12);
+DECLARE srnm VARCHAR(12);
+
+DECLARE Evaluator CURSOR FOR
+ SELECT req_evaluator
+ FROM requestsevaluation
+ LEFT JOIN evaluator ON evaluator.ev_id = requestsevaluation.req_evaluator
+ LEFT JOIN employee ON employee.empl_username = requestsevaluation.req_employee
+ WHERE employee.empl_username = usernameOfEmployee;
+
+
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished_flag=1;
+
+OPEN  Evaluator;
+SET finished_flag = 0;
+
+SELECT count(*) INTO numOfapplies 
+FROM applies
+WHERE applies.applies_employee = usernameOfEmployee;
+
+SELECT count(*) INTO numOfevaluations 
+FROM evaluationresult
+WHERE evaluationresult.res_employee=usernameOfEmployee;
+
+SELECT numOfapplies  AS 'Arithmos Aitisewn', numOfevaluations AS 'Arithmos Olokliromenon Aitisewn';
+
+WHILE(finished_flag=0) DO
+
+
+FETCH Evaluator INTO evalusrname ;
+    
+     SELECT user.name AS 'ONOMA Aksiologiti' , user.surname AS 'EPWNYMO Aksiologitis'
+     FROM user
+     LEFT JOIN evaluator ON evaluator.ev_username = user.username
+     WHERE  evaluator.ev_username =evalusrname ;
+     
+END WHILE;
+CLOSE Evaluator;
+
+IF(numOfapplies>numOfevaluations) THEN
+
+SELECT 'Aksiologisi se ekseliksi';
+
+SELECT *
+FROM requestsevaluation
+WHERE requestsevaluation.evaluationId  NOT IN (SELECT evaluationresult.res_id FROM evaluationresult);
+END IF;
+
+END$
+
+DELIMITER ;
+CALL Employee('edwardst');
+
+
+
+
+
+
+
+
+
+
+
+
+DROP PROCEDURE IF EXISTS evaluation;
+DELIMITER $
+CREATE PROCEDURE evaluation(IN IdEvaluation INT(4),IN usernameofEmployee VARCHAR(12),IN IdJob INT(4),IN Evaluator VARCHAR(12))
+BEGIN
+DECLARE vathmos1 FLOAT(3,1);
+DECLARE comm VARCHAR(255);
+DECLARE vathmos2 FLOAT(3,1);
+DECLARE gradeofdegree FLOAT(3,1);
+DECLARE gradeofsistatikes FLOAT(3,1);
+DECLARE numOfproject FLOAT(3,1);
+DECLARE vathmos3 FLOAT(3,1);
+DECLARE final FLOAT(3,1);
+
+
+SELECT interview INTO vathmos1
+FROM requestsevaluation
+WHERE requestsevaluation.evaluationId=IdEvaluation;
+SELECT vathmos1;
+
+SELECT comments INTO comm
+FROM requestsevaluation
+WHERE requestsevaluation.evaluationId=IdEvaluation;
+
+SELECT report INTO vathmos2
+FROM requestsevaluation
+WHERE requestsevaluation.evaluationId=IdEvaluation;
+SELECT vathmos2;
+
+SELECT AVG(grade) INTO gradeofdegree
+FROM has_degree
+WHERE has_degree.degr_employee=usernameofEmployee;
+
+
+SELECT AVG(grade) INTO gradeofsistatikes 
+FROM sistatikes
+WHERE sistatikes.employee=usernameofEmployee;
+
+SELECT count(*) INTO numOfproject
+FROM project
+WHERE project.proj_employee=usernameofEmployee;
+
+ 
+SET vathmos3=(numOfproject+gradeofdegree+gradeofsistatikes)/3;
+SELECT vathmos3;
+SET final= (vathmos1*0.4 + vathmos2*0.4+ vathmos3*0.2);
+SELECT final;
+IF(final>=4  ) THEN
+INSERT INTO evaluationresult (res_id, res_employee,res_jobid, res_grade, res_comments,res_administratorId,vathmos1,vathmos2,vathmos3,status)
+VALUES(IdEvaluation,usernameofEmployee,IdJob,final,comm,1097,vathmos1,vathmos2,vathmos3,'dekth');
+ELSE IF (final < 4 ) THEN
+INSERT INTO evaluationresult (res_id, res_employee,res_jobid, res_grade, res_comments,res_administratorId,vathmos1,vathmos2,vathmos3,status)
+VALUES(IdEvaluation,usernameofEmployee,IdJob,final,comm,1097,vathmos1,vathmos2,vathmos3,'aporriptetai');
+
+END IF;
+END IF;
+END$
+
+ 
+DELIMITER ;
+CALL evaluation(4555,'edwardst',3301,1097);
+CALL evaluation(4556,'edwardst',3301,1097);
+CALL evaluation(4557,'edwardst',3302,1097);
+
+
+
+
+
+
+
+
+
+
+
+
+
+DROP PROCEDURE IF EXISTS finished_evals;
+DELIMITER $
+CREATE PROCEDURE finished_evals(IN jobcode INT(4))
+BEGIN
+
+    DECLARE count1 INT;
+    DECLARE count2 INT;
+    DECLARE result FLOAT(3,1);
+
+    SELECT COUNT(*) INTO count1 FROM applies WHERE applies_jobid=jobcode ;
+    SELECT COUNT(*) INTO count2 FROM evaluationresult WHERE res_jobid=jobcode;
+    
+
+    IF(count1 > count2) THEN
+    SELECT count1 - count2 AS ' There are still requests pending evaluation: ';
+    
+    SELECT * FROM evaluationresult WHERE res_jobid=jobcode ORDER BY final DESC;
+
+    ELSE
+    SELECT * FROM evaluationresult WHERE res_jobid=jobcode ORDER BY final DESC; 
+    END IF;
+
+END $
+DELIMITER ;
+CALL finished_evals(3301);
+
+
+
+
+DROP PROCEDURE IF EXISTS anakoinwsh;
+DELIMITER $
+CREATE PROCEDURE anakoinwsh(IN IdJob INT(4))
+BEGIN
+
+SELECT position AS 'YPOVOLI AITHSEWN GIA THN THESI:'
+FROM job 
+WHERE jobid=IdJob; 
+
+END$
+
+DELIMITER ;
+
+CALL anakoinwsh(3302);
