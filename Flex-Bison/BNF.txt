@@ -1,0 +1,113 @@
+program::=              T_PROGRAM T_ID T_NL <structs> T_NL <functions> T_NL <main> 
+                        | T_PROGRAM T_ID T_NL <functions> T_NL <main> 
+                        | T_PROGRAM T_ID T_NL <structs> T_NL <main>
+                        | T_PROGRAM T_ID T_NL <main> 
+
+<functions> ::=         <function> 
+		                | <functions> T_NL <function> 
+		
+<function> ::=          T_FUNCTION T_ID T_LPAR <arguments> T_RPAR T_NL <body>
+
+<body> ::=              <declare> <commands> <return> T_ENDFUNCTION
+
+<declare> ::=           <declare>  T_VARS <type> <variable> T_SCOLON
+                        | ε
+
+<return> ::=            T_RETURN T_NUMBER
+                        | T_RETURN T_C
+                        | T_RETURN T_ID
+
+<variable> ::=          T_ID
+                        |T_ID T_LBRAC T_NUMBER T_RBRAC
+		                | <variable> T_COMMA <variable> 
+
+<type> ::=              T_CHAR
+                        | T_INTEGER
+
+<main> ::=              T_STARTMAIN <declare> <commands> T_ENDMAIN
+
+<commands> ::=          <commands> <command>
+                        | ε
+
+<command> ::=              <command_assign>
+                        | <command_loop>
+                        | <command_check>
+                        | <print>
+                        | <break>
+                        | <functioncall>
+
+<command_assign> ::=    T_ID T_ASSIGN <expression> T_SCOLON
+                        | T_ID T_ASSIGN T_C T_SCOLON
+
+<expression> ::=        <term> 
+                        | <expression> <operator> <term>
+
+<term> ::=              <factor> 
+                        | <functioncall> 
+
+<factor> ::=            T_ID
+                        | T_ID T_LBRAC T_NUMBER T_RBRAC 
+                        | T_NUMBER
+                        | T_LPAR <expression> T_RPAR
+
+<operator> ::=            T_ADD
+                        |T_SUB
+                        |T_MUL
+                        |T_DIV
+                        |T_POWER
+
+<functioncall> ::=      T_ID T_LPAR <functioncall_arguments> T_RPAR
+
+<functioncall_arguments>::=     <factor>
+                                | <functioncall_arguments> T_COMMA <functioncall_arguments>
+                                |ε
+
+<arguments> ::=             <argument>
+                            | <arguments> T_COMMA <argument> 
+                            | ε
+
+<argument> ::=              T_VARS <type> T_ID
+
+<command_loop> ::=          T_WHILE T_LPAR <condition> T_RPAR <commands> T_ENDWHILE
+                            | T_FOR <count> T_TO T_NUMBER T_STEP T_NUMBER <commands> T_ENDFOR
+                  
+<count> ::=                 T_ID T_COLON T_ASSIGN T_NUMBER
+
+<condition> ::=             <expression> <condition_operator> <expression>
+
+<compare_operator> ::=      T_LT 
+                            | T_GT 
+                            | T_EQ 
+                            | T_NQ 
+                            | T_AND 
+                            | T_OR
+
+<command_check> ::=         T_IF T_LPAR <condition> T_RPAR T_THEN <commands> <if_tail> T_ENDIF
+                            | T_SWITCH T_LPAR <expression> T_RPAR <cases> T_ENDSWITCH
+                  
+<cases> ::=                 <cases> <case>
+                            | ε
+                    
+case::=                     T_CASE T_LPAR <expression> T_RPAR T_COLON <commands> 
+                            | T_DEFAULT T_COLON <commands>
+                    
+<if_tail> ::=               <if_tail> T_ELSEIF T_LPAR <condition> T_RPAR <commands>
+                            | <if_tail> T_ELSE <commands>
+                            | ε    
+
+<print> ::=                 T_PRINT T_LPAR T_STRING T_COMMA T_LBRAC T_ID T_RBRAC T_RPAR T_SCOLON
+                            |T_PRINT T_LPAR T_STRING T_PAR T_SCOLON
+                    
+<break> ::=                 T_BREAK T_SCOLON
+
+<structs>::=                <struct>
+                            | <structs> T_NL <struct>
+                  
+<struct>::=                 T_STRUCT T_ID T_NL <declare> T_ENDSTRUCT 
+                            | T_TYPEDEF T_STRUCT T_ID T_NL <declare> T_ID T_ENDSTRUCT 
+                   
+                  
+
+                  
+
+

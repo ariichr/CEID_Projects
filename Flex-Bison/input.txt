@@ -1,0 +1,57 @@
+PROGRAM onoma_programmatos
+
+TYPEDEF STRUCT tipos
+    VARS INTEGER struct_var1;
+tipos ENDSTRUCT
+STRUCT tipos
+    VARS INTEGER struct_var2;
+ENDSTRUCT
+
+FUNCTION sinartisi(VARS INTEGER arg1, VARS CHAR arg2)
+    VARS INTEGER var_int1,var_int2,var_int3[10];
+    VARS CHAR var_char;
+    var_int2 = 5;
+    var_int1 = var_int2 * 3  + 2;
+    RETURN arg1
+END_FUNCTION
+
+STARTMAIN
+VARS INTEGER var1;
+VARS CHAR var2;
+VARS INTEGER counter;
+PRINT("auto einai ena string",[var1]);
+PRINT("auto einai ena allo string");
+IF(var1==5) THEN
+        var1 = var1 + 12;
+    ELSEIF(var1>6)
+        var1 = var1 + 2;
+    ELSE
+        var1 = var1 + 3;
+ENDIF
+FOR counter:=1 TO 100 STEP 2
+    SWITCH(var1)
+    CASE(1):
+        sinartisi((10 * var1),var2)
+    CASE(2):
+        var1 = var1;
+        BREAK;
+    DEFAULT:
+        var1 = var1;
+    ENDSWITCH
+ENDFOR
+WHILE(var1==5)
+    var1 = var1;
+ENDWHILE
+IF(var1==5) THEN
+        var1 = var1 + 12;
+    ELSEIF(arg1>6)
+        var1 = var1 + 2;
+    ELSE
+        var1 = var1 + 3;
+ENDIF
+ENDMAIN
+
+/* Auto
+einai ena
+multi-line comment*/
+%Auto einai ena single line comment

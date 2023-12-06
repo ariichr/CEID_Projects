@@ -1,0 +1,225 @@
+
+%{
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
+#include "bis.tab.h"
+void yyerror(char const *S);
+extern int yylineno;
+extern char* yytext;
+extern FILE *yyin;
+extern FILE *yyout;
+int yylex(void);								
+%}
+
+%error-verbose
+
+
+%union{
+      int intval;
+      char *strval;
+}
+
+%token <strval> T_PROGRAM       "program"  
+%token <strval> T_FUNCTION      "function"   
+%token <strval> T_ENDFUNCTION   "endfunction"
+%token <strval> T_STRUCT        "struct"
+%token <strval> T_ENDSTRUCT     "endstruct"
+%token <strval> T_TYPEDEF       "typedef"
+%token <strval> T_VARS          "vars" 
+%token <strval> T_CHAR          "char" 
+%token <strval> T_INT           "int"
+%token <strval> T_RETURN        "return"
+%token <strval> T_STARTMAIN     "startmain"
+%token <strval> T_ENDMAIN       "endmain"
+
+/*Εντολές*/ 
+%token <strval> T_WHILE         "while"
+%token <strval> T_ENDWHILE      "endwhile"
+%token <strval> T_FOR           "for"
+%token <strval> T_TO            "to"
+%token <strval> T_STEP          "step"
+%token <strval> T_ENDFOR        "endfor"
+%token <strval> T_IF            "if"
+%token <strval> T_THEN          "then"
+%token <strval> T_ELSE          "else"
+%token <strval> T_ELSEIF        "elseif"
+%token <strval> T_ENDIF         "endif"
+%token <strval> T_SWITCH        "switch"
+%token <strval> T_CASE          "case"
+%token <strval> T_DEFAULT       "default"
+%token <strval> T_ENDSWITCH     "endswitch"
+%token <strval> T_PRINT         "print"
+%token <strval> T_BREAK         "break"
+/*Symbols*/
+%token <strval> T_ADD           "add"
+%token <strval> T_SUB           "subtract"      
+%token <strval> T_POWER         "power"
+%token <strval> T_MUL           "multiply"
+%token <strval> T_DIV           "divide"
+%token <strval> T_LT            "less than"
+%token <strval> T_GT            "greater than"
+%token <strval> T_EQ            "equal"
+%token <strval> T_NQ            "not equal"
+%token <strval> T_AND           "and"
+%token <strval> T_OR            "or"
+%token <strval> T_ASSIGN        "assign"
+%token <strval> T_LPAR          "left parenthesis"
+%token <strval> T_RPAR          "right parenthesis"
+%token <strval> T_SCOLON        "semicolon"
+%token <strval> T_COMMA         "comma"           
+%token <strval> T_COLON         "colon"
+%token <strval> T_LBRAC         "left bracket"
+%token <strval> T_RBRAC         "right bracket"
+%token <strval> T_NL            "new line"
+%token <strval> Unknown         "unknown"
+%token <strval> T_ID            "id"
+%token <intval>T_NUMBER         "number"
+/*End of File*/
+%token <strval> T_EOF           0
+
+%left T_COMMA
+%right T_ASSIGN 
+%left T_OR
+%left T_AND
+%left T_EQ T_NQ T_LT T_GT
+%left T_ADD T_SUB
+%left T_MUL T_DIV
+%left T_POWER
+%left T_LPAR T_RPAR T_LBRAC T_RBRAC
+
+%nonassoc LOWER_THAN_ELSE
+%nonassoc T_ELSE
+%%
+
+
+program:    T_PROGRAM T_ID T_NL functions T_NL main 
+            ;
+functions:  function
+            | functions T_NL function 
+            | %empty {}
+            ;
+function:   T_FUNCTION T_ID T_LPAR arguments T_RPAR T_NL body
+            ;
+body:       declare commands return T_ENDFUNCTION
+            ;
+declare:    declare  T_VARS type variable T_SCOLON
+            | %empty
+            ;           
+return:     T_RETURN T_NUMBER
+            | T_RETURN char
+            | T_RETURN T_ID
+            ;            
+variable:   T_ID
+            | variable T_COMMA T_ID
+            ;
+type:       T_CHAR
+            | T_INT
+            ;
+main:       T_STARTMAIN declare commands T_ENDMAIN
+            ;
+
+commands:   commands  command
+            | %empty
+            ;
+command:    command_assign
+            | command_loop
+            | command_check
+            | print
+            | break
+            ;
+command_assign:   T_ID T_ASSIGN expression T_SCOLON
+                  ;
+expression: term 
+            | expression operator term
+            ;
+term:       factor
+            | functioncall 
+            | term T_ASSIGN factor
+            ; 
+factor:     T_ID
+            | T_NUMBER
+            | T_LPAR expression T_RPAR
+            ;
+operator:   T_ADD
+            |T_SUB
+            |T_MUL
+            |T_DIV
+            |T_POWER
+            ;
+functioncall:     T_ID T_LPAR variable T_RPAR
+                  ;
+arguments:  argument
+            | arguments T_COMMA argument
+            | %empty
+            ;
+argument:   T_VARS type T_ID
+            ;
+            
+command_loop:     T_WHILE T_LPAR condition T_RPAR commands T_ENDWHILE
+                  | T_FOR count T_TO T_NUMBER T_STEP T_NUMBER commands T_ENDFOR
+                  ;
+count:      T_ID T_COLON T_ASSIGN T_NUMBER
+            ;
+condition:  expression condition_operator expression 
+            ;
+condition_operator:     T_LT 
+                        | T_GT 
+                        | T_EQ 
+                        | T_NQ 
+                        | T_AND 
+                        | T_OR
+                        ;
+command_check:    T_IF T_LPAR condition T_RPAR T_THEN commands if_tail T_ENDIF
+                  | T_SWITCH T_LPAR expression T_RPAR cases T_ENDSWITCH
+                  ;
+cases:            cases case
+                  | %empty
+                  ;
+
+case:             T_CASE T_LPAR expression T_RPAR T_COLON commands 
+                  | T_DEFAULT T_COLON commands
+                  ;
+
+if_tail:          if_tail T_ELSEIF T_LPAR condition T_RPAR commands
+                  | if_tail T_ELSE commands
+                  | %empty %prec LOWER_THAN_ELSE  
+                  ;        
+print:            T_PRINT T_LPAR string print_var T_RPAR T_SCOLON
+                  ;
+print_var:        T_COMMA T_LBRAC variable T_RBRAC
+                  | %empty
+                  ;
+break:            T_BREAK T_SCOLON
+                  ;
+string:           %empty
+                  ;
+char:             %empty
+                  ;
+
+struct:     T_STRUCT T_ID T_NL declare T_ENDSTRUCT
+            | T_TYPEDEF T_STRUCT T_LT T_ID T_GT declare  T_LT T_ID T_GT T_ENDSTRUCT {if T_ID != T_ID}
+            ;
+%%								    
+    
+
+void yyerror(char const *s) 
+{
+    fprintf(stderr,"\nThere is an error: %s\nLine: %d\nToken: %s\n", s, yylineno, yytext);
+	exit(1);
+}									
+
+
+int main ( int argc, char **argv  ) 
+  {
+  ++argv; --argc;
+  if ( argc > 0 )
+        yyin = fopen( argv[0], "r" );
+  else
+        yyin = stdin;
+  yyout = fopen ( "output", "w" );	
+  yyparse ();
+  fclose(yyin);
+  return 0;
+  }  
