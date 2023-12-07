@@ -1,0 +1,78 @@
+function [centers,Xq,D] = LloydMax(x,N,min,max)
+
+
+sections=2^(N);
+S=cell(1,sections);
+
+centers=zeros(1,sections);
+period=(max-min)/sections;
+Xq=zeros(length(x),1);
+
+
+
+T = zeros(1, (sections+1));
+T(1)=min;
+D = [0 1];
+
+for i=1:length(x)
+    if x(i)<min
+       x(i)=min;
+    elseif (x(i)>max)
+        x(i)=max;
+    end    
+
+end    
+
+
+
+
+for i=2:length(T) %ορια καθε τμηματος ομοιομορφα
+     
+    T(i)= T(i-1)+period;
+    
+end
+
+for w=1:sections %centers me vash omoiomotfia
+centers(w)=(T(w)+T(w+1))/2;
+end
+
+d_counter=2;
+while abs(D(d_counter) - D(d_counter-1)) >= eps
+
+d = 0;
+cellInsert=ones(1,sections);
+for u=1:length(x)     
+
+for w=1:sections
+   
+    if(x(u)>=T(w) && x(u)<T(w+1))   %τοποθέτηση τιμών σε περιοχες
+       
+         S{w}(1,cellInsert(w))={x(u)};
+         cellInsert(w)=cellInsert(w)+1;
+         Xq(u)=centers(w);
+         d= d + ((centers(w) - x(u))^2);
+         w=sections;
+    end  
+   
+end
+
+end
+
+avg_distortion = d/(length(x));
+D = [D avg_distortion];
+ d_counter = d_counter + 1;
+
+for v=1:sections %centers me vash omoiomotfia
+A=cell2mat(S{v});
+if(A~=0)
+centers(v)=mean(A);
+end
+end
+
+for w=1:(sections-1) %nea oria
+T(w+1)=(centers(w)+centers(w+1))/2;
+
+end
+end
+fprintf('Successfully exited after %d iterations.\n', d_counter-2);
+end

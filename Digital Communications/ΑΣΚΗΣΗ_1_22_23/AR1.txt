@@ -1,0 +1,74 @@
+function [y]=AR1
+L = 10000;
+x = randn(L,1);
+a1=0.9;
+b=1;
+a=[1 -a1];
+y=filter(b,a,x);
+
+end
+
+-------------
+
+function [xqADM] = ADM(Xq, M)
+
+K=1.5;
+Xq= interp(Xq, M);
+e=zeros(1, length(Xq));
+b=zeros(1, length(Xq));
+b(1) = sign(Xq(1));
+eq=zeros(1, length(Xq));
+xqADM=zeros(1, length(Xq));
+xqADM(1)=Xq(1);
+delay=zeros(1, length(Xq));
+delay(1)=Xq(1);
+d = zeros(1, length(Xq));
+d(1)=0.001;
+% Κωδικοποιητής
+for i=2:length(Xq)
+e(i)=Xq(i)-delay(i-1);
+
+if e(i)>= 0
+b(i) = 1;
+else
+b(i) = -1;
+end
+
+if b(i) == b(i-1)
+d(i) = d(i-1) * K;
+else
+d(i) = d(i-1) / K;
+end
+eq(i) = d(i) * b(i);
+xqADM(i) = eq(i) + delay(i-1);
+delay(i) = xqADM(i);
+
+end
+
+for i=2:length(Xq)
+if b(i)==b(i-1)
+d(i)=d(i-1)*K;
+else
+d(i)=d(i-1)/K;
+end
+
+eq(i)=d(i)*b(i);
+xqADM(i)=eq(i)+delay(i-1);
+
+
+end
+
+end
+------------------------
+function SQRN(D,x,N)
+
+
+SQNR1=10*log10(mean(x.^2)./D);
+
+
+plot(SQNR1)
+xlabel('Αριθμός Επαναλήψεων')
+ylabel('SQNR')
+title(['N=' num2str(N)])
+
+end
